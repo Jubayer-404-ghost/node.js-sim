@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>𝐉𝐔𝐁𝐀𝐘𝐄𝐑 𝐂𝐇𝐀𝐓 亗</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;600&display=swap');
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Rubik', sans-serif;
+      background: #0d0d0d;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    h2 {
+      text-align: center;
+      color: #ffffff;
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+      font-size: 22px;
+      margin-bottom: 25px;
+    }
+    #chatBox {
+      flex-grow: 1;
+      height: 320px;
+      background: #141414;
+      border-radius: 12px;
+      padding: 15px;
+      overflow-y: auto;
+      border: 1px solid #292929;
+      box-shadow: 0 0 20px #111;
+      margin-bottom: 20px;
+      scroll-behavior: smooth;
+      white-space: pre-wrap;
+    }
+    .msg {
+      margin: 12px 0;
+      padding: 10px 14px;
+      border-radius: 8px;
+      max-width: 85%;
+      word-wrap: break-word;
+      font-size: 15px;
+    }
+    .user {
+      background: #1e1e1e;
+      color: #58d5ff;
+      align-self: flex-end;
+      text-align: right;
+      margin-left: auto;
+      border-left: 3px solid #58d5ff;
+    }
+    .bot {
+      background: #1a1212;
+      color: #ff7f7f;
+      align-self: flex-start;
+      margin-right: auto;
+      border-right: 3px solid #ff3c3c;
+    }
+    #inputSection {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 12px;
+      font-size: 15px;
+      background: #1a1a1a;
+      color: #f0f0f0;
+      border: 1px solid #333;
+      border-radius: 8px;
+      transition: 0.2s;
+    }
+    input[type="text"]:focus {
+      border-color: #ff3c3c;
+      outline: none;
+      background: #222;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 15px;
+      background: #1a1a1a;
+      color: #fff;
+      font-weight: bold;
+      border: 1px solid #333;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #2a2a2a;
+      border-color: #ff3c3c;
+      box-shadow: 0 0 10px rgba(255, 60, 60, 0.3);
+    }
+    .teach-section {
+      background: #121212;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #111;
+    }
+    .teach-section h3 {
+      color: #ffb84d;
+      margin-bottom: 15px;
+    }
+    .teach-section input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #1b1b1b;
+      color: white;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+    }
+    .teach-section input:focus {
+      background: #232323;
+      border-color: #ff3c3c;
+      outline: none;
+    }
+    .teach-section button {
+      width: 100%;
+    }
+    #teachCount {
+      text-align: center;
+      margin-top: 15px;
+      color: #ffd700;
+      font-weight: bold;
+    }
+    @media (max-width: 600px) {
+      #chatBox { height: 250px; }
+      h2 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>𝐉𝐔𝐁𝐀𝐘𝐄𝐑 𝐂𝐇𝐀𝐓 亗</h2>
+
+  <div id="chatBox"></div>
+
+  <div id="inputSection">
+    <input type="text" id="messageInput" placeholder="Set your username">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <div class="teach-section">
+    <h3>Teach the Bot</h3>
+    <input type="text" id="teachQ" placeholder="Enter a question...">
+    <input type="text" id="teachA" placeholder="Enter an answer...">
+    <button onclick="teachBot()">Teach</button>
+    <p id="teachCount">Loading...</p>
+  </div>
+
+  <script>
+    const API_BASE = "https://jubayer-simsimi-api-xyz.onrender.com/sim/font1";
+    let username = "";
+
+    function appendMessage(sender, text, cls) {
+      const box = document.getElementById("chatBox");
+      const msg = document.createElement("div");
+      msg.className = `msg ${cls}`;
+      msg.textContent = `${sender}: ${text}`;
+      box.appendChild(msg);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById("messageInput");
+      const msg = input.value.trim();
+
+      if (!msg) return;
+
+      if (!username) {
+        username = msg;
+        appendMessage("Bot", "Your name has been set successfully.", "bot");
+        input.value = "";
+        input.placeholder = "Type your message...";
+        return;
+      }
+
+      appendMessage(username, msg, "user");
+
+      try {
+        const res = await fetch(`${API_BASE}?ask=${encodeURIComponent(msg)}`);
+        const data = await res.json();
+        appendMessage("Bot", data.reply, "bot");
+      } catch {
+        appendMessage("Bot", "Error contacting API", "bot");
+      }
+
+      input.value = "";
+    }
+
+    async function teachBot() {
+      const q = document.getElementById("teachQ").value.trim();
+      const a = document.getElementById("teachA").value.trim();
+
+      if (!q || !a) {
+        appendMessage("Bot", "Please enter both Question And Answer", "bot");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}?teach=${encodeURIComponent(q + "|" + a)}`);
+        const data = await res.json();
+
+        if (data.message && data.message.toLowerCase().includes("already")) {
+          appendMessage("Bot", "I already received this Teach.", "bot");
+        } else {
+          const responseText = `Teach Add successfully ✅\nQuestion: ${q}\nAnswer: ${a}`;
+          appendMessage("Bot", responseText, "bot");
+        }
+
+        document.getElementById("teachQ").value = "";
+        document.getElementById("teachA").value = "";
+        loadTeachCount();
+      } catch {
+        appendMessage("Bot", "Failed to teach.", "bot");
+      }
+    }
+
+    async function loadTeachCount() {
+      try {
+        const res = await fetch("https://jubayer-simsimi-api-xyz.onrender.com/sim/list");
+        const data = await res.json();
+        document.getElementById("teachCount").textContent = `Total taught: ${data.total} Items`;
+      } catch {
+        document.getElementById("teachCount").textContent = "Failed to load teach count.";
+      }
+    }
+
+    window.onload = () => {
+      loadTeachCount();
+    };
+  </script>
+
+</body>
+</html>
