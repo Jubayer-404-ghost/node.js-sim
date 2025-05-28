@@ -12,7 +12,6 @@ const BIN_ID = '6832cc128561e97a501b3942';
 const API_KEY = '$2a$10$tSLa00PWcTbhaMWpfPSDMuxyKuGc1s7brkzaQxGClVGAe7TseOVRq';
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
-// ফন্ট ম্যাপিং (font1)
 const font1Map = {
   a: '𝗮', b: '𝗯', c: '𝗰', d: '𝗱', e: '𝗲', f: '𝗳', g: '𝗴', h: '𝗵', i: '𝗶',
   j: '𝗷', k: '𝗸', l: '𝗹', m: '𝗺', n: '𝗻', o: '𝗼', p: '𝗽', q: '𝗾', r: '𝗿',
@@ -26,11 +25,6 @@ const font1Map = {
 
 function applyFont1(text) {
   return text.split('').map(ch => font1Map[ch] || ch).join('');
-}
-
-// স্পেশাল সিম্বল ফিল্টার
-function cleanText(text) {
-  return text.replace(/[~`|ঽ√π÷×{}£$℅^°_=‌®©™\\<@#৳%&*\-+()!"':;/]/g, '').trim().toLowerCase();
 }
 
 async function getMemory() {
@@ -59,6 +53,10 @@ async function updateMemory(memory) {
   }
 }
 
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 app.get('/sim/:font?', async (req, res) => {
   const { font } = req.params;
   const { ask, teach } = req.query;
@@ -67,7 +65,9 @@ app.get('/sim/:font?', async (req, res) => {
     const memory = await getMemory();
     const count = Object.keys(memory).length;
     let message = `Total taught: ${count} items`;
-    if (font === 'font1') message = applyFont1(message);
+    if (font === 'font1') {
+      message = applyFont1(message);
+    }
     return res.json({ total: count, message });
   }
 
@@ -78,7 +78,7 @@ app.get('/sim/:font?', async (req, res) => {
     if (!question || !answer) {
       return res.status(400).json({ error: 'Teach format: /sim?teach=question|answer' });
     }
-    const qKey = cleanText(question);
+    const qKey = question.trim().toLowerCase();
     if (memory[qKey]) {
       return res.json({ message: `Already learned: "${question}" → "${memory[qKey]}"` });
     }
@@ -88,18 +88,15 @@ app.get('/sim/:font?', async (req, res) => {
   }
 
   if (ask) {
-    const qKey = cleanText(ask);
+    const qKey = ask.trim().toLowerCase();
     let reply = memory[qKey] || 'I don’t know that yet! Teach me using /sim?teach=question|answer';
-    if (font === 'font1') reply = applyFont1(reply);
+    if (font === 'font1') {
+      reply = applyFont1(reply);
+    }
     return res.json({ reply });
   }
 
   return res.status(400).json({ error: 'Use /sim?ask=question or /sim?teach=question|answer' });
-});
-
-// Serve index.html directly from root
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, () => {
